@@ -3,6 +3,17 @@ from datetime import datetime, timedelta, timezone
 import tkinter as tk
 from PIL import Image, ImageTk
 import pygame
+import os
+import sys
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 
 def calculate_times():
     # Set the timezone to UTC+8
@@ -42,7 +53,7 @@ def calculate_times():
     return now.strftime('%Y-%m-%d %H:%M:%S'), bedtime_message, awake_message, duration_message
 
 def show_sleep_times():
-    pygame.mixer.music.load("ZNJSM.mp3")
+    pygame.mixer.music.load(resource_path("ZNJSM.mp3"))
     pygame.mixer.music.play()
 
     current_time, bedtime_message, awake_message, duration_message = calculate_times()
@@ -64,7 +75,7 @@ root.minsize(400, 400)
 
 # Load an image using Pillow
 image_path = "LD.JPG"  # Replace with your image path
-image = Image.open(image_path)
+image = Image.open(resource_path("LD.JPG"))
 image = image.resize((262,465))  # Resize the image as needed
 photo = ImageTk.PhotoImage(image)
 
@@ -91,6 +102,8 @@ btn.pack(pady=20)
 
 # Keep a reference to the image to prevent it from being garbage collected
 image_label.image = photo
+
+
 
 # Start the GUI event loop
 root.mainloop()
