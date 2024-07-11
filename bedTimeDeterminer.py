@@ -1,15 +1,15 @@
 import random
 from datetime import datetime, timedelta, timezone
+import tkinter as tk
+from PIL import Image, ImageTk
+import pygame
 
-def sleep():
+def calculate_times():
     # Set the timezone to UTC+8
     tz = timezone(timedelta(hours=8))
     now = datetime.now(tz)
     current_hour = now.hour
     current_minute = now.minute
-
-    # Print current time
-    print(f"現在時間：{now.strftime('%Y-%m-%d %H:%M:%S')}")
 
     # Generate random bedtime that is before the current time
     hour = random.randint(0, current_hour)
@@ -20,7 +20,7 @@ def sleep():
         bedtime_datetime = datetime(now.year, now.month, now.day, hour, minute, tzinfo=tz)
         period = "下午" if hour >= 12 else "上午"
         formatted_hour = hour if hour <= 12 else hour - 12
-        print(f"樂多今天{period} {formatted_hour:02}點{minute:02}分要去睡覺")
+        return f"樂多今天{period} {formatted_hour:02}點{minute:02}分要去睡覺"
 
     def awake():
         global awake_datetime, day
@@ -28,16 +28,69 @@ def sleep():
         day = "隔天" if awake_datetime.day > bedtime_datetime.day else "今天"
         period = "下午" if awake_datetime.hour >= 12 else "上午"
         formatted_hour = awake_datetime.hour if awake_datetime.hour <= 12 else awake_datetime.hour - 12
-        print(f"樂多{day}{period} {formatted_hour:02}點{awake_datetime.minute:02}分要起床")
+        return f"樂多{day}{period} {formatted_hour:02}點{awake_datetime.minute:02}分要起床"
 
     def duration():
         duration = awake_datetime - bedtime_datetime
         hours, remainder = divmod(duration.seconds, 3600)
         minutes = remainder // 60
-        print(f"樂多共睡了{hours:02}小時{minutes:02}分鐘")
+        return f"樂多共睡了{hours:02}小時{minutes:02}分鐘"
 
-    bedtime(hour, minute)
-    awake()
-    duration()
+    bedtime_message = bedtime(hour, minute)
+    awake_message = awake()
+    duration_message = duration()
+    return now.strftime('%Y-%m-%d %H:%M:%S'), bedtime_message, awake_message, duration_message
 
-sleep()
+def show_sleep_times():
+    pygame.mixer.music.load("ZNJSM.mp3")
+    pygame.mixer.music.play()
+
+    current_time, bedtime_message, awake_message, duration_message = calculate_times()
+    current_time_label.config(text=f"現在時間：{current_time}")
+    bedtime_label.config(text=bedtime_message)
+    awake_label.config(text=awake_message)
+    duration_label.config(text=duration_message)
+
+pygame.mixer.init()
+
+
+# Create the main window
+root = tk.Tk()
+root.title("古希臘掌管睡覺的神")
+
+# Set minimum size for the window
+root.minsize(400, 400)
+
+
+# Load an image using Pillow
+image_path = "LD.JPG"  # Replace with your image path
+image = Image.open(image_path)
+image = image.resize((262,465))  # Resize the image as needed
+photo = ImageTk.PhotoImage(image)
+
+# Create a label to display the image
+image_label = tk.Label(root, image=photo)
+image_label.pack(pady=5)
+
+# Create labels to display the information
+current_time_label = tk.Label(root, text="")
+current_time_label.pack(pady=5)
+
+bedtime_label = tk.Label(root, text="")
+bedtime_label.pack(pady=5)
+
+awake_label = tk.Label(root, text="")
+awake_label.pack(pady=5)
+
+duration_label = tk.Label(root, text="")
+duration_label.pack(pady=5)
+
+# Create and place the button
+btn = tk.Button(root, text="累累病又發作了，真的點點點", command=show_sleep_times)
+btn.pack(pady=20)
+
+# Keep a reference to the image to prevent it from being garbage collected
+image_label.image = photo
+
+# Start the GUI event loop
+root.mainloop()
